@@ -6,6 +6,34 @@ import { X, Minus, Plus, ShoppingBag } from "lucide-react";
 import Image from "next/image";
 import { useEffect } from "react";
 
+type RazorpayResponse = {
+  razorpay_payment_id: string;
+};
+
+type RazorpayOptions = {
+  key: string;
+  amount: number;
+  currency: string;
+  name: string;
+  description: string;
+  image: string;
+  handler: (response: RazorpayResponse) => void;
+  prefill: {
+    name: string;
+    email: string;
+    contact: string;
+  };
+  theme: {
+    color: string;
+  };
+};
+
+declare global {
+  interface Window {
+    Razorpay?: new (options: RazorpayOptions) => { open: () => void };
+  }
+}
+
 export default function CartCanvas() {
   const { isCartOpen, closeCart, items, updateQuantity, removeItem, getTotal, clearCart } = useCartStore();
 
@@ -31,7 +59,7 @@ export default function CartCanvas() {
       name: "Majesty Mandi House",
       description: "Premium Arabian Dining",
       image: "https://your-domain.com/logo.jpg", // Ideally an absolute URL
-      handler: function (response: any) {
+      handler: function (response: RazorpayResponse) {
         // Payment successful
         const paymentId = response.razorpay_payment_id;
         
@@ -58,7 +86,8 @@ export default function CartCanvas() {
       }
     };
 
-    const rzp = new (window as any).Razorpay(options);
+    if (!window.Razorpay) return;
+    const rzp = new window.Razorpay(options);
     rzp.open();
   };
 

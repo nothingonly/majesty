@@ -182,27 +182,27 @@ const openWhatsApp = (text: string) => {
 export default function Home() {
   const [category, setCategory] = useState<(typeof categories)[number]>('All');
   const [query, setQuery] = useState('');
-  const [special, setSpecial] = useState<Special>(defaultSpecial);
+  const [special, setSpecial] = useState<Special>(() => {
+    if (typeof window === 'undefined') {
+      return defaultSpecial;
+    }
+    return JSON.parse(localStorage.getItem(SPECIAL_KEY) ?? JSON.stringify(defaultSpecial)) as Special;
+  });
   const [specialEditorOpen, setSpecialEditorOpen] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
   const [showLeadPopup, setShowLeadPopup] = useState(false);
-  const [loyaltyPoints, setLoyaltyPoints] = useState(0);
+  const [loyaltyPoints, setLoyaltyPoints] = useState<number>(() => {
+    if (typeof window === 'undefined') {
+      return 0;
+    }
+    return Number(localStorage.getItem(LOYALTY_KEY) ?? '0');
+  });
 
   const [leadForm, setLeadForm] = useState({ name: '', mobile: '' });
   const [preOrder, setPreOrder] = useState({ name: '', mobile: '', details: '', pickupTime: '' });
   const [feedbackForm, setFeedbackForm] = useState({ name: '', mobile: '', rating: '5', message: '' });
 
   useEffect(() => {
-    const savedSpecial = localStorage.getItem(SPECIAL_KEY);
-    if (savedSpecial) {
-      setSpecial(JSON.parse(savedSpecial) as Special);
-    }
-
-    const savedPoints = localStorage.getItem(LOYALTY_KEY);
-    if (savedPoints) {
-      setLoyaltyPoints(Number(savedPoints));
-    }
-
     const timer = window.setTimeout(() => setShowLeadPopup(true), 15000);
     return () => window.clearTimeout(timer);
   }, []);
@@ -246,7 +246,7 @@ export default function Home() {
 
   const submitPreOrder = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    const message = `Pre-Order Pickup Request%0AName: ${preOrder.name}%0AMobile: ${preOrder.mobile}%0AOrder: ${preOrder.details}%0APickup Time: ${preOrder.pickupTime}`;
+    const message = `Pre-Order Pickup Request\nName: ${preOrder.name}\nMobile: ${preOrder.mobile}\nOrder: ${preOrder.details}\nPickup Time: ${preOrder.pickupTime}`;
     openWhatsApp(message);
   };
 

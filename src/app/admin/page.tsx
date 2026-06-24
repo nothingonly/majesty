@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 
 type Lead = {
   name: string;
@@ -15,14 +15,14 @@ const templates = ['Ramadan Mubarak', 'Eid Wishes', 'Sankranti Wishes', 'Diwali 
 const sanitizePhone = (value: string) => value.replace(/\D/g, '');
 
 export default function AdminPage() {
-  const [leads, setLeads] = useState<Lead[]>([]);
+  const [leads] = useState<Lead[]>(() => {
+    if (typeof window === 'undefined') {
+      return [];
+    }
+    return JSON.parse(localStorage.getItem(LEADS_KEY) ?? '[]') as Lead[];
+  });
   const [selectedTemplate, setSelectedTemplate] = useState(templates[0]);
   const [customMessage, setCustomMessage] = useState('');
-
-  useEffect(() => {
-    const saved = JSON.parse(localStorage.getItem(LEADS_KEY) ?? '[]') as Lead[];
-    setLeads(saved);
-  }, []);
 
   const greetingText = useMemo(
     () => customMessage.trim() || `${selectedTemplate}! Warm greetings from Majesty Mandi House.`,
